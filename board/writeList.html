@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.js"></script>
+    <script type="text/javascript" src="jquery.cookie.js"></script>
+</head>
+<body onload="start() ,checkCookie()">
+    <input type="text" hidden id="hidePageValue" name="hideValue" value="0">
+    <div class="container">
+        <div style="width: 300px; height: 70px; border: 1px solid black; margin-top: 20px ; float:left;">
+            <form id="form1" name="form1" action="http://localhost/board/login.php" method="post">
+                <table style="margin-left: 2px ; margin-top: 10px" >
+                    <tr>
+                        <td>아이디 : </td>
+                        <td><input type='text' id='user_id' name='user_id' tabindex='1'/></td>
+                        <td rowspan='2'><input type='button' id='login' tabindex='3' value='로그인' style='height:50px'/></td>
+                    </tr>
+                    <tr>
+                        <td>비밀번호 : </td>
+                        <td><input type='password' id='user_pw' name='user_pw' tabindex='2'/></td>
+                    </tr>
+                </table>
+            </form>
+            <div id="message"></div>
+        </div>
+        <br>
+        <div class="input-group" style="padding-left: 10px ; padding-top: 0px ; float: none">
+            <form>
+                <select name="selectA" style="height: 38px; float: left" class="form-control-static">
+                    <option value="subject">제목</option>
+                    <option value="contents">내용</option>
+                    <option value="user_id">작성자</option>
+                </select>
+                <input type="text" id="search" name="search" class="form-control-static" style="width: 500px ">
+            </form>
+            <button type="button" class="btn btn-block" onclick="search()">입력</button>
+        </div>
+
+        <hr style="border: dashed 3px black;">
+        <input hidden type="text" name="hide" id="hide">
+        <table border="1" style="text-align: center ; border-color: black" class="table table-hover">
+            <thead style="">
+                <tr bgcolor="#adff2f">
+                    <td>번호</td>
+                    <td>제목</td>
+                    <td>작성자</td>
+                    <td>작성시간</td>
+                    <td>조회수</td>
+                </tr>
+            </thead>
+            <tbody id="tableList">
+
+            </tbody>
+        </table>
+        </hr>
+        <button type="button" class="btn btn-success" onclick="location.href='board_input.html'" id="writeBu">글쓰기</button>
+
+        <div class="text-center">
+            <ul class="pagination" id="pagenation">
+            </ul>
+        </div>
+    </div>
+    <script language="JavaScript">
+        $('#writeBu').hide();
+        //<------------------------------테이블을 업데이트 한기전 비워주는 작업---------------------->
+        function deleteB() {
+            var va = document.getElementById("tableList");
+
+            while (va.children.length > 0) {
+                va.removeChild(va.firstChild);
+            }
+        }
+        //<--------------------------------------------------------------------------------------->
+        //<-----------------------ul을 업데이트------------------------------------------>
+        function deleteli() {
+            var va = document.getElementById("pagenation");
+
+            while (va.children.length > 0) {
+                va.removeChild(va.firstChild);
+            }
+        }
+        //<--------------------------------------------------------------------------------------->
+        //<-----------------------------------시작------------------------------------------------->
+        function start() {
+            $.ajax({
+                url: "http://localhost/board/selectList.php",
+                type: "get"
+            }).done(function (data) {
+                $('#tableList').append(data);
+            });
+            $.ajax({
+                url: "http://localhost/board/board_pagemation.php",
+                type: "get"
+            }).done(function (data) {
+                $('#pagenation').append(data);
+            });
+
+        }
+        //<---------------------------------------------------------------------------------------->
+        //<-----------------------------------페이지 넘기기---------------------------------------->
+        function page_Next(event) {
+            var eventID = 0;
+            deleteB();
+            eventID = parseInt(event.target.id);
+            if(eventID >= 2) {
+                deleteli();
+                document.getElementById("hidePageValue").value = eventID;
+                $.ajax({
+                    url: "http://localhost/board/num_5_over.php",
+                    type: "post",
+                    data: $('#hidePageValue').serialize()
+                }).done(function (data) {
+                    //alert(data);
+                    $('#pagenation').append(data);
+                });
+
+            }
+            document.getElementById("hidePageValue").value = eventID;
+            $.ajax({
+                url: "http://localhost/board/select_num.php",
+                type: "post",
+                data: $('#hidePageValue').serialize()
+            }).done(function (data) {
+                //alert(data);
+                $('#tableList').append(data);
+            });
+        }
+        //<---------------------------------------------------------------------------------------------------->
+        //<----------------------------------읽기 전용------------------------------------------------------>
+        function readPage(event) {
+            eventID = event.target.id;
+            document.getElementById("hidePageValue").value = eventID;
+            $.ajax({
+                url: "http://localhost/board/hits.php",
+                type: "post",
+                data: $('#hidePageValue').serialize()
+            }).done(function (data) {
+                //alert(data);
+                //$('#tableList').append(data);
+            });
+            document.getElementById("hidePageValue").value = eventID;
+            openfile = window.open("window_read_page.html","a","width=527 , height=600");
+            setTimeout(delayRead,1000);
+        }
+        function delayRead() {
+            var temp = openfile.document.getElementById("hide");
+            temp.value = eventID; // 연 파일중 hiddenValue라는
+            // id를 가진 값에다가 값을 집어 넣는다.
+        }
+        //<----------------------------------------------------------------------------------------------------->
+        function search() {
+            deleteB();
+            $.ajax({
+                url: "http://localhost/board/search.php",
+                type: "post",
+                data: $("form").serialize()
+            }).done(function (data) {
+                //alert(data);
+                $('#tableList').append(data);
+            });
+        }
+        //<----------------------------------------------------------------------------------------------------->
+        $(document).ready(function() {
+            $("#login").click(function() {
+                var action = $("#form1").attr('action');
+                var form_data = {
+                    user_id: $("#user_id").val(),
+                    user_pw: $("#user_pw").val(),
+                    is_ajax: 1
+                };
+                $.ajax({
+                    type: "POST",
+                    url: action,
+                    data: form_data,
+                    success: function(response) {
+                       var temp = response.trim(); //엔터 제거
+                        var idset = document.getElementById("user_id").value;
+                        $.cookie(temp , idset);
+                        if(temp == "success") {
+                            $('#writeBu').show();
+                            var id = $.cookie("success");
+                            $("#message").html(
+                                "<p style='color:green;font-weight:bold'>" + id + "님 환영합니다.</p>" +
+                                "<button type='button' class='btn btn-danger' onclick= ''>로그아웃</button>"
+                            );
+                            $("#form1").slideUp('slow');
+                        }
+                        else {
+                            $("#message").html("<p style='color:red'>아이디 또는 비밀번호가 잘못되었습니다.</p>");
+                        }
+                    }
+                });
+                return false;
+            });
+        });
+
+        function checkCookie() {
+            if($.cookie("success") != null) {
+                $('#writeBu').show();
+                var id = $.cookie("success");
+                $("#message").html(
+                    "<p style='color:green;font-weight:bold'>" + id + "님 환영합니다.</p>" +
+                    "<button type='button' class='btn btn-danger' onclick= 'cookieDelete()'>로그아웃</button>"
+                );
+                $("#form1").slideUp('slow');
+            }
+        }
+
+        function cookieDelete() {
+            $.removeCookie("success");
+            window.location.reload()
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.js"></script>
+    <script type="text/javascript" src="jquery.cookie.js"></script>
+    <style>
+        .div_create {
+            width: 500px;
+            height: 800px;
+            border: 2px solid black;
+            margin-left: 5px;
+        }
+        .text_box_area {
+            margin-left: 25px;
+        }
+    </style>
+</head>
+<body>
+    <hr />
+    <div class="div_create">
+        <form>
+            제목 : <input type="text" name="title" id="title" style="width: 400px; margin-top: 8px">
+            <input hidden type="text" name="hidden_id" id="hidden_id" value="">
+            <input hidden type="text" name="hidden_userName" id="hidden_userName" value="">
+            <br><br>
+            <textarea cols="60" rows="30" name="contents" id="contents" class="text_box_area" autofocus>
+            </textarea>
+        </form>
+        <br>
+        <input type="button" value="확인" onclick="check()" style="margin-left: 200px">
+        <input type="button" value="취소" onclick="">
+    </div>
+
+    <script language="JavaScript">
+        //<----------------제목이 있는지 없는지 확인 후 없으면 값을 넘기지 않고 제목을 받음--------------->
+        function check() {
+            var title = document.getElementById("title").value;
+            var userid = document.getElementById("hidden_id");
+            userid.value = $.cookie("success");
+            $.ajax({
+                url: "http://localhost/board/idcheck.php",
+                type: "post",
+                data: $('#hidden_id').serialize()
+            }).done(function (data) {
+                document.getElementById("hidden_userName").value = data;
+            });
+            if(title == null) {
+                alert("제목을 입력해 주세요.");
+            } else {
+                $.ajax({
+                    url: "http://localhost/board/board_save.php",
+                    type: "post",
+                    data: $("form").serialize()
+                })
+            }
+            history.back();
+        }
+        //<--------------------------------------------------------------------------------------->
+    </script>
+</body>
+</html>
+

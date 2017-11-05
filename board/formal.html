@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.js"></script>
+</head>
+<body>
+    <div class="container">
+        <form>
+            <input type="text" hidden id="hiddenNum" name="hiddenNum">
+            <div>
+                <br>
+                <input type="text" id="subjects" name="subjects">
+                <br>
+                <hr>
+                <textarea cols="60" rows="30" name="contents" id="contents" class="text_box_area" autofocus>
+                </textarea>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="formal()">수정완료</button>
+        </form>
+    </div>
+
+    <script language="JavaScript">
+        setTimeout(onReady,1000);
+        //<--------------------------------------------------------------------------------------->
+        function onReady() {
+            $.ajax({
+                url: "http://localhost/board/select_Subject.php",
+                type: "get",
+                data: $('#hiddenNum').serialize()
+            }).done(function (data) {
+                //alert(data);
+                document.getElementById("subjects").value = data;
+            });
+            $.ajax({
+                url: "http://localhost/board/select_Contents.php",
+                type: "get",
+                data: $('#hiddenNum').serialize()
+            }).done(function (data) {
+                //alert(data);
+                document.getElementById("contents").value = data;
+            });
+        }
+        //<--------------------------------------------------------------------------------------->
+        function formal() {
+            $.ajax({
+                url: "http://localhost/board/formal.php",
+                type: "post",
+                data: $("form").serialize()
+            }).done(function (data) {
+                //alert(data);
+                opener.opener.location.reload();
+                window.opener.open('','_self').close();
+                window.open('','_parent').close();
+            });
+        }
+        //<--------------------------------------------------------------------------------------->
+    </script>
+</body>
+</html>

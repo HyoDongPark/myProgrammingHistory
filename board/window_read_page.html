@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.js"></script>
+    <script type="text/javascript" src="jquery.cookie.js"></script>
+</head>
+<body>
+      <div class="container">
+          <input hidden type="text" id="hidden" , name="hidden">
+          <div id="inputRead" style="width: 400px; height: 500px" class="col-lg-1">
+          <hr>
+          </div>
+          <button type="button" class="btn btn-success" onclick="formal()" id="For">수정</button>
+          <button type="button" class="btn btn-danger" onclick="deleteContents()" id="Del">삭제</button>
+          <br>
+          <br>
+          <div>
+              <form>
+                  <input hidden type="text" id="hide" name="hide">
+                  <input hidden type="text" id="hide_userid" name="hide_ui">
+                  <input type="text" id="coContents" name="coContents" style="width: 305px ;height: 31px; float:left; margin-top :1px;">
+              </form>
+              <button type="button" class="btn btn-default" onclick="coments()" id="coInsert" style="margin-left: 2px ; float: none">등록</button>
+              <br>
+              <hr style="solid-color: black ;" >
+              <br>
+              <table border="1" style="text-align: center ; border-color: black" class="table table-hover">
+                  <thead style="background-color: yellow">
+                    <tr>
+                        <td>아이디</td>
+                        <td>내용</td>
+                        <td>날짜</td>
+                        <td>삭제</td>
+                    </tr>
+                  </thead>
+                  <tbody id="inputComment">
+
+                  </tbody>
+              </table>
+          </div>
+    </div>
+    <script>
+        $('#For').hide();
+        $('#Del').hide();
+        $('#coContents').hide();
+        $('#coInsert').hide();
+        setTimeout(ready,1000);
+        //<--------------------------------------------------------------------------------------->
+        function ready() {
+            $.ajax({
+                url: "http://localhost/board/readPage.php",
+                type: "get",
+                data: $('#hide').serialize()
+            }).done(function (data) {
+                //alert(data);
+                $('#inputRead').append(data);
+                opener.location.reload();
+            });
+            $.ajax({
+                url: "http://localhost/board/checkedid.php",
+                type: "post",
+                data: $('#hide').serialize()
+            }).done(function (data) {
+                //alert(data);
+                document.getElementById("hide_userid").value = $.cookie('success');
+                if($.cookie("success") != null && $.cookie("success") == data) {
+                    $('#For').show();
+                    $('#Del').show();
+                    $('#coContents').show();
+                    $('#coInsert').show();
+                } else if($.cookie("success") != null || $.cookie("success") == data) {
+                    $('#coContents').show();
+                    $('#coInsert').show();
+                }
+            });
+            $.ajax({
+                url: "http://localhost/board/showComments.php",
+                type: "get",
+                data: $('#hide').serialize()
+            }).done(function (data) {
+                //alert(data);
+                $('#inputComment').append(data);
+            });
+        }
+        //<--------------------------------------------------------------------------------------->
+        function coments() {
+            deleteB();
+            $.ajax({
+                url: "http://localhost/board/coments.php",
+                type: "post",
+                data: $("form").serialize()
+            }).done(function (data) {
+                //alert(data);
+                $('#inputComment').append(data);
+            });
+        }
+        //<--------------------------------------------------------------------------------------->
+        function deleteContents() {
+            $.ajax({
+                url: "http://localhost/board/delete.php",
+                type: "post",
+                data: $('#hide').serialize()
+            }).done(function (data) {
+                //alert(data);
+                opener.parent.location.reload();
+                window.open('about:blank','_parent').self.close();
+            });
+        }
+        //<--------------------------------------------------------------------------------------->
+        function formal() {
+            countC = 0;
+            openfile = window.open("formal.html","b","width=473 , height=761");
+            setTimeout(setValue, 1000);
+        }
+        //<--------------------------------------------------------------------------------------->
+        function setValue() {
+            var a = document.getElementById("hide").value;
+            openfile.document.getElementById("hiddenNum").value = a;
+        }
+        //<--------------------------------------------------------------------------------------->
+        function deleteComments(event) {
+            document.getElementById("hidden").value = event.target.id;
+            $.ajax({
+                url: "http://localhost/board/delete.php",
+                type: "post",
+                data: $('#hidden').serialize()
+            }).done(function (data) {
+                deleteB();
+                //alert(data);
+                $('#inputComment').append(data);
+            });
+        }
+        //<--------------------------------------------------------------------------------------->
+        function deleteB() {
+            var va = document.getElementById("inputComment");
+
+            while (va.children.length > 0) {
+                va.removeChild(va.firstChild);
+            }
+        }
+        //<--------------------------------------------------------------------------------------->
+    </script>
+</body>
+</html>
